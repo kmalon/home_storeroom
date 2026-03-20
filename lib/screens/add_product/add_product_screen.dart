@@ -56,44 +56,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     if (picked != null) setState(() => _expirationDate = picked);
   }
 
-  Future<void> _addNewName(AppLocalizations l) async {
-    final controller = TextEditingController();
-    final name = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l.newProductName),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l.name,
-            border: const OutlineInputBorder(),
-          ),
-          onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(l.cancel)),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-            child: Text(l.add),
-          ),
-        ],
-      ),
-    );
-    if (name == null || name.isEmpty) return;
-    try {
-      await ref.read(storeroomProvider.notifier).addProductName(name);
-      setState(() => _selectedName = name);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l.errorMessage(e))));
-      }
-    }
-  }
-
   Future<void> _submit(AppLocalizations l) async {
     final category = _selectedCategory;
     final name = _selectedName;
@@ -207,28 +169,16 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
               isActive: _step >= 2,
               content: Column(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: l.productNameField,
-                            border: const OutlineInputBorder(),
-                          ),
-                          value: _selectedName,
-                          items: productNames
-                              .map((n) => DropdownMenuItem(value: n, child: Text(n)))
-                              .toList(),
-                          onChanged: (v) => setState(() => _selectedName = v),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        tooltip: l.addNewName,
-                        onPressed: () => _addNewName(l),
-                      ),
-                    ],
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: l.productNameField,
+                      border: const OutlineInputBorder(),
+                    ),
+                    value: _selectedName,
+                    items: productNames
+                        .map((n) => DropdownMenuItem(value: n, child: Text(n)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _selectedName = v),
                   ),
                   const SizedBox(height: 16),
                   TextField(

@@ -17,7 +17,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
 
-  static const _routes = ['/products', '/categories'];
+  static const _routes = ['/products', '/categories', '/product-names'];
 
   Future<void> _pickLanguage(AppLocalizations l) async {
     final current = ref.read(localeProvider);
@@ -90,6 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         destinations: [
           NavigationDestination(icon: const Icon(Icons.list_alt), label: l.productsTab),
           NavigationDestination(icon: const Icon(Icons.category), label: l.categoriesTab),
+          NavigationDestination(icon: const Icon(Icons.label_outline), label: l.namesTab),
         ],
       ),
       floatingActionButton: _selectedIndex == 0 && !ref.watch(editSheetOpenProvider)

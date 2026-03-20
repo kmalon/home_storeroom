@@ -30,6 +30,7 @@ class AppLocalizations {
   // Bottom nav
   String get productsTab => _t('Products', 'Produkty');
   String get categoriesTab => _t('Categories', 'Kategorie');
+  String get namesTab => _t('Names', 'Nazwy');
 
   // Product list
   String get noProductsYet => _t('No products yet', 'Brak produktów');
@@ -62,6 +63,13 @@ class AppLocalizations {
       _t('Cannot delete: products exist', 'Nie można usunąć: istnieją produkty');
   String get deleteCategory => _t('Delete category', 'Usuń kategorię');
   String productCount(int n) => _t('$n product(s)', '$n produkt(ów)');
+
+  // Product names screen
+  String get newProductNameField => _t('New product name', 'Nowa nazwa produktu');
+  String get noNamesYet => _t('No product names yet', 'Brak nazw produktów');
+  String get deleteProductName => _t('Delete name', 'Usuń nazwę');
+  String get cannotDeleteNameProducts =>
+      _t('Cannot delete: products exist', 'Nie można usunąć: istnieją produkty');
 
   // Add product
   String get selectCategory => _t('Select a category', 'Wybierz kategorię');
