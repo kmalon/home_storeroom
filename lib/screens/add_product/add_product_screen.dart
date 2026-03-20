@@ -50,7 +50,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now().add(const Duration(days: 365)),
-      firstDate: DateTime.now(),
+      firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
     if (picked != null) setState(() => _expirationDate = picked);

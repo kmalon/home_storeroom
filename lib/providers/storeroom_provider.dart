@@ -73,6 +73,15 @@ class StoreroomNotifier extends AsyncNotifier<StoreroomData> {
     await _save(current.copyWith(products: updated));
   }
 
+  Future<void> updateProduct(Product updated) async {
+    final current = state.requireValue;
+    final index = current.products.indexWhere((p) => p.id == updated.id);
+    if (index < 0) throw Exception('Product not found');
+    final products = List.of(current.products);
+    products[index] = updated;
+    await _save(current.copyWith(products: products));
+  }
+
   Future<void> addCategory(String name) async {
     final current = state.requireValue;
     if (current.categories.any((c) => c.name == name)) {

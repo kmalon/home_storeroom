@@ -111,6 +111,118 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     return sorted;
   }
 
+  Future<void> _showEditSheet(BuildContext context, Product product) async {
+    final l = AppLocalizations.of(context);
+    final nameController = TextEditingController(text: product.name);
+    final qtyController = TextEditingController(text: '${product.quantity}');
+    DateTime? expiry = product.expirationDate;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                16, 16, 16, MediaQuery.of(ctx).viewInsets.bottom + 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.editProduct,
+                      style: Theme.of(ctx).textTheme.titleMedium),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: l.productNameField,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: qtyController,
+                    decoration: InputDecoration(
+                      labelText: l.quantityField,
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: expiry ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) setSheetState(() => expiry = picked);
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: l.expirationDateField,
+                        border: const OutlineInputBorder(),
+                      ),
+                      child: Text(
+                        expiry != null
+                            ? _dateFmt.format(expiry!)
+                            : l.tapToSelect,
+                        style: TextStyle(
+                          color: expiry != null ? null : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: Text(l.cancel),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final name = nameController.text.trim();
+                          final qty = int.tryParse(qtyController.text) ?? product.quantity;
+                          if (name.isEmpty || expiry == null) return;
+                          Navigator.of(ctx).pop();
+                          try {
+                            await ref.read(storeroomProvider.notifier).updateProduct(
+                                  product.copyWith(
+                                    name: name,
+                                    quantity: qty,
+                                    expirationDate: expiry!,
+                                  ),
+                                );
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(l.errorMessage(e))),
+                              );
+                            }
+                          }
+                        },
+                        child: Text(l.save),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    nameController.dispose();
+    qtyController.dispose();
+  }
+
   Future<void> _pickDate(bool isMin) async {
     final initial = isMin
         ? (_minExpiry ?? DateTime.now())
@@ -411,6 +523,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                             DateTime(today.year, today.month, today.day);
                         final isExpiredOrToday = !expiryDate.isAfter(todayDate);
                         return InkWell(
+                          onTap: () => _showEditSheet(context, p),
                           onLongPress: () => context.push('/remove-product'),
                           child: Container(
                             color: isExpiredOrToday ? Colors.red.shade50 : null,
