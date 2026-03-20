@@ -99,6 +99,15 @@ class StoreroomNotifier extends AsyncNotifier<StoreroomData> {
     await _save(current.copyWith(productNames: [...current.productNames, name]));
   }
 
+  Future<void> deleteProductName(String name) async {
+    final current = state.requireValue;
+    if (current.products.any((p) => p.name == name)) {
+      throw Exception('Cannot delete name: products exist');
+    }
+    final updated = current.productNames.where((n) => n != name).toList();
+    await _save(current.copyWith(productNames: updated));
+  }
+
   Future<void> deleteCategory(String name) async {
     final current = state.requireValue;
     if (current.products.any((p) => p.category == name)) {
