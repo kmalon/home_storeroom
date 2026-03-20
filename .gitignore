@@ -1,0 +1,25 @@
+# Build output
+/build/
+
+# Dart/Flutter generated files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+# Freezed / build_runner generated files — regenerate with:
+# flutter pub run build_runner build --delete-conflicting-outputs
+lib/**/*.freezed.dart
+lib/**/*.g.dart
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Sensitive — never commit these
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist

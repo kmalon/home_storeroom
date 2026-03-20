@@ -1,0 +1,16 @@
+You are flutter developr and you are creating app for android and iphone. Create whole repo here. App will be for tracking things that you have in the storeroom. App features:
+ - login to the google account with gmail address
+ - use excel sheet on the gdrive on this accout, use direcotry /home_storeroom/ and create file with name storeroom there
+ - if file is already there use it
+ - the excel file will be as your database, so if the App different people use the same google accoutn will be able to see and work on the same file
+ - you should be able to define product category eg. cans
+ - to each category you can add new product or remove existing
+ - the App should be able to use phone camera and scan a product barcode and add it to the choosen product category. In excel sheet should be saved product barcode
+ - each added product will have category to which contains, barcode, name and expiration date
+ - each category will handle number of product it has
+ - during adding product use will choose product category, then scan barcode, or write it down manually, then select quantity, name and expiration date
+ - the app shuold be able to remove stored products
+ - product removal:
+	- scan product barcode, set quantity to remove and app will remove scanned barcode from excel file, if removed quantity is equal or bigger than excel quantity then the related barcode will be removed, if is lower quantity is decreased
+	- manualy remove product after choosing product category, from dropdown list choose product name to remove and quantity
+ - the App should be able to list all products and should be able to sort by each filed so by: product category, name, quantity, expiration date
