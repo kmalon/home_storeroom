@@ -113,10 +113,12 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Future<void> _showEditSheet(BuildContext context, Product product) async {
     final l = AppLocalizations.of(context);
-    final nameController = TextEditingController(text: product.name);
+    final productNames = ref.read(storeroomProvider).valueOrNull?.productNames ?? [];
     final qtyController = TextEditingController(text: '${product.quantity}');
     DateTime? expiry = product.expirationDate;
+    String? selectedName = productNames.contains(product.name) ? product.name : null;
 
+    ref.read(editSheetOpenProvider.notifier).state = true;
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -133,12 +135,16 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                   Text(l.editProduct,
                       style: Theme.of(ctx).textTheme.titleMedium),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: nameController,
+                  DropdownButtonFormField<String>(
                     decoration: InputDecoration(
                       labelText: l.productNameField,
                       border: const OutlineInputBorder(),
                     ),
+                    value: selectedName,
+                    items: productNames
+                        .map((n) => DropdownMenuItem(value: n, child: Text(n)))
+                        .toList(),
+                    onChanged: (v) => setSheetState(() => selectedName = v),
                   ),
                   const SizedBox(height: 12),
                   TextField(
@@ -187,9 +193,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                       const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () async {
-                          final name = nameController.text.trim();
+                          final name = selectedName;
                           final qty = int.tryParse(qtyController.text) ?? product.quantity;
-                          if (name.isEmpty || expiry == null) return;
+                          if (name == null || name.isEmpty || expiry == null) return;
                           Navigator.of(ctx).pop();
                           try {
                             await ref.read(storeroomProvider.notifier).updateProduct(
@@ -219,7 +225,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
       },
     );
 
-    nameController.dispose();
+    ref.read(editSheetOpenProvider.notifier).state = false;
     qtyController.dispose();
   }
 

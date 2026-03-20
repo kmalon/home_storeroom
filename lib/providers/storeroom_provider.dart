@@ -113,3 +113,5 @@ final storeroomProvider =
     AsyncNotifierProvider<StoreroomNotifier, StoreroomData>(
   StoreroomNotifier.new,
 );
+
+final editSheetOpenProvider = StateProvider<bool>((ref) => false);
