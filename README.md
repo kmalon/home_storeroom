@@ -156,7 +156,12 @@ Build APK (output: `build/app/outputs/flutter-apk/app-release.apk`):
 JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 flutter build apk
 ```
 
-Transfer the APK to your phone via USB, email, or Google Drive, then install it.
+After a successful build the APK is at:
+```
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+Transfer it to your phone via USB, email, or Google Drive, then open it to install.
 On the phone: Settings → Install unknown apps → allow once.
 
 ### iOS
