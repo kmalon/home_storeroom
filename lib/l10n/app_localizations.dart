@@ -104,6 +104,10 @@ class AppLocalizations {
   String get barcodeLabel => _t('Barcode: ', 'Kod: ');
   String get product => _t('Product', 'Produkt');
 
+  // Edit product
+  String get editProduct => _t('Edit Product', 'Edytuj produkt');
+  String get save => _t('Save', 'Zapisz');
+
   // Language picker
   String get language => _t('Language', 'Język');
   String get systemDefault => _t('System default', 'Domyślny systemu');

@@ -92,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           NavigationDestination(icon: const Icon(Icons.category), label: l.categoriesTab),
         ],
       ),
-      floatingActionButton: _selectedIndex == 0
+      floatingActionButton: _selectedIndex == 0 && !ref.watch(editSheetOpenProvider)
           ? FloatingActionButton(
               onPressed: () => context.push('/add-product'),
               child: const Icon(Icons.add),
