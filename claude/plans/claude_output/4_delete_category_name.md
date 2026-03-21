@@ -17,3 +17,11 @@
 - Same pattern as categories screen
 - When count > 0: shows `AlertDialog` via `showDialog`
 - When count == 0: proceeds with `_deleteName`
+
+## Fix: Screen goes dark after closing popup
+
+**Issue:** After clicking OK in the popup, screen turned dark and app became unusable.
+
+**Root cause:** `Navigator.of(context).pop()` used `itemBuilder`'s `context` instead of the dialog's context. This popped the wrong route (the screen route) while leaving the dialog barrier overlay in place.
+
+**Fix:** Changed `builder: (_)` to `builder: (dialogContext)` and used `Navigator.of(dialogContext).pop()` in both `categories_screen.dart` and `product_names_screen.dart`.

@@ -100,12 +100,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                               if (count > 0) {
                                 showDialog(
                                   context: context,
-                                  builder: (_) => AlertDialog(
+                                  builder: (dialogContext) => AlertDialog(
                                     title: Text(l.cannotDeleteTitle),
                                     content: Text(l.cannotDeleteCategoryBody(count)),
                                     actions: [
                                       TextButton(
-                                        onPressed: () => Navigator.of(context).pop(),
+                                        onPressed: () => Navigator.of(dialogContext).pop(),
                                         child: const Text('OK'),
                                       ),
                                     ],

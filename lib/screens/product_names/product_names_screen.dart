@@ -100,12 +100,12 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
                               if (count > 0) {
                                 showDialog(
                                   context: context,
-                                  builder: (_) => AlertDialog(
+                                  builder: (dialogContext) => AlertDialog(
                                     title: Text(l.cannotDeleteTitle),
                                     content: Text(l.cannotDeleteNameBody(count)),
                                     actions: [
                                       TextButton(
-                                        onPressed: () => Navigator.of(context).pop(),
+                                        onPressed: () => Navigator.of(dialogContext).pop(),
                                         child: const Text('OK'),
                                       ),
                                     ],
