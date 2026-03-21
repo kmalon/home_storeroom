@@ -122,6 +122,10 @@ class AppLocalizations {
       );
   String get ok => _t('OK', 'OK');
   String get product => _t('Product', 'Produkt');
+  String get addCategoryTitle => _t('Add Category', 'Dodaj kategorię');
+  String get addNameTitle => _t('Add Name', 'Dodaj nazwę');
+  String get categoryAlreadyExists => _t('Category already exists', 'Kategoria już istnieje');
+  String get nameAlreadyExists => _t('Name already exists', 'Nazwa już istnieje');
 
   // Edit product
   String get editProduct => _t('Edit Product', 'Edytuj produkt');
