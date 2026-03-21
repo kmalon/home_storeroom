@@ -54,6 +54,7 @@ class AppLocalizations {
   String get colName => _t('Name', 'Nazwa');
   String get colQty => _t('Qty', 'Ilość');
   String get colExpiry => _t('Expiry', 'Ważność');
+  String get colBarcode => _t('Barcode', 'Kod kreskowy');
 
   // Categories screen
   String get newCategory => _t('New category', 'Nowa kategoria');

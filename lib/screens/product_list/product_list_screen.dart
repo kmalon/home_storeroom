@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/product.dart';
 import '../../providers/storeroom_provider.dart';
 import '../../widgets/sort_header.dart';
+import '../../widgets/loading_overlay.dart';
 
 enum _SortField { category, name, barcode, quantity, expiration }
 
@@ -21,6 +22,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   // Sort
   _SortField _sortField = _SortField.name;
   bool _sortAsc = true;
+  bool _loading = false;
 
   // Filters
   bool _showFilters = false;
@@ -197,6 +199,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                           final qty = int.tryParse(qtyController.text) ?? product.quantity;
                           if (name == null || name.isEmpty || expiry == null) return;
                           Navigator.of(ctx).pop();
+                          setState(() => _loading = true);
                           try {
                             await ref.read(storeroomProvider.notifier).updateProduct(
                                   product.copyWith(
@@ -211,6 +214,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                 SnackBar(content: Text(l.errorMessage(e))),
                               );
                             }
+                          } finally {
+                            if (mounted) setState(() => _loading = false);
                           }
                         },
                         child: Text(l.save),
@@ -393,7 +398,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final state = ref.watch(storeroomProvider);
-    return state.when(
+    return LoadingOverlay(
+      isLoading: _loading,
+      child: state.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text(l.errorMessage(e))),
       data: (data) {
@@ -490,6 +497,15 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     ),
                   ),
                   Expanded(
+                    flex: 2,
+                    child: SortHeader(
+                      label: l.colBarcode,
+                      isActive: _sortField == _SortField.barcode,
+                      ascending: _sortAsc,
+                      onTap: () => _toggleSort(_SortField.barcode),
+                    ),
+                  ),
+                  Expanded(
                     child: SortHeader(
                       label: l.colQty,
                       isActive: _sortField == _SortField.quantity,
@@ -542,6 +558,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                     child: Text(p.category,
                                         style: const TextStyle(fontSize: 13))),
                                 Expanded(flex: 2, child: Text(p.name)),
+                                Expanded(flex: 2, child: Text(p.barcode, style: const TextStyle(fontSize: 11))),
                                 Expanded(child: Text('${p.quantity}')),
                                 Expanded(
                                   flex: 2,
@@ -574,6 +591,6 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           ],
         );
       },
-    );
+    ));
   }
 }
