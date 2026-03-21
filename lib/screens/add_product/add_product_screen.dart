@@ -46,6 +46,92 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     }
   }
 
+  Future<void> _showAddCategoryDialog(AppLocalizations l) async {
+    final controller = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.addCategoryTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l.newCategory),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              final name = controller.text.trim();
+              if (name.isEmpty) return;
+              try {
+                await ref.read(storeroomProvider.notifier).addCategory(name);
+                if (mounted) {
+                  setState(() => _selectedCategory = name);
+                  Navigator.of(ctx).pop();
+                }
+              } catch (e) {
+                if (mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l.categoryAlreadyExists)),
+                  );
+                }
+              }
+            },
+            child: Text(l.add),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+  }
+
+  Future<void> _showAddNameDialog(AppLocalizations l) async {
+    final controller = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.addNameTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l.newProductNameField),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              final name = controller.text.trim();
+              if (name.isEmpty) return;
+              try {
+                await ref.read(storeroomProvider.notifier).addProductName(name);
+                if (mounted) {
+                  setState(() => _selectedName = name);
+                  Navigator.of(ctx).pop();
+                }
+              } catch (e) {
+                if (mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l.nameAlreadyExists)),
+                  );
+                }
+              }
+            },
+            child: Text(l.add),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+  }
+
   Future<void> _pickDate(AppLocalizations l) async {
     final picked = await showDatePicker(
       context: context,
@@ -141,20 +227,42 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             Step(
               title: Text(l.stepCategory),
               isActive: _step >= 0,
-              content: categories.isEmpty
-                  ? Text(
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (categories.isEmpty)
+                    Text(
                       l.noCategoriesHint,
                       style: const TextStyle(color: Colors.grey),
                     )
-                  : DropdownButton<String>(
-                      isExpanded: true,
-                      hint: Text(l.selectCategory),
-                      value: _selectedCategory,
-                      items: categories
-                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                          .toList(),
-                      onChanged: (v) => setState(() => _selectedCategory = v),
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            hint: Text(l.selectCategory),
+                            value: _selectedCategory,
+                            items: categories
+                                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                .toList(),
+                            onChanged: (v) => setState(() => _selectedCategory = v),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () => _showAddCategoryDialog(l),
+                        ),
+                      ],
                     ),
+                  if (categories.isEmpty)
+                    TextButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: Text(l.addCategoryTitle),
+                      onPressed: () => _showAddCategoryDialog(l),
+                    ),
+                ],
+              ),
             ),
             Step(
               title: Text(l.stepBarcode),
@@ -185,16 +293,27 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
               isActive: _step >= 2,
               content: Column(
                 children: [
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: l.productNameField,
-                      border: const OutlineInputBorder(),
-                    ),
-                    value: _selectedName,
-                    items: productNames
-                        .map((n) => DropdownMenuItem(value: n, child: Text(n)))
-                        .toList(),
-                    onChanged: (v) => setState(() => _selectedName = v),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: l.productNameField,
+                            border: const OutlineInputBorder(),
+                          ),
+                          value: _selectedName,
+                          items: productNames
+                              .map((n) => DropdownMenuItem(value: n, child: Text(n)))
+                              .toList(),
+                          onChanged: (v) => setState(() => _selectedName = v),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () => _showAddNameDialog(l),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   TextField(
