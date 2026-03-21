@@ -86,8 +86,24 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l.errorMessage(e))));
+        if (e.toString().contains('Barcode already exists')) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text(l.barcodeAlreadyExistsTitle),
+              content: Text(l.barcodeAlreadyExistsBody),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(l.ok),
+                ),
+              ],
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l.errorMessage(e))));
+        }
       }
     } finally {
       if (mounted) setState(() => _loading = false);
