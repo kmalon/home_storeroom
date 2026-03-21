@@ -43,16 +43,10 @@ class StoreroomNotifier extends AsyncNotifier<StoreroomData> {
       (p) => p.barcode == product.barcode,
     );
 
-    List<Product> updated;
     if (existing >= 0) {
-      // Same barcode: increment quantity, keep original expiry
-      updated = List.of(current.products);
-      updated[existing] = updated[existing].copyWith(
-        quantity: updated[existing].quantity + product.quantity,
-      );
-    } else {
-      updated = [...current.products, product];
+      throw Exception('Barcode already exists');
     }
+    final updated = [...current.products, product];
 
     await _save(current.copyWith(products: updated));
   }

@@ -115,6 +115,12 @@ class AppLocalizations {
   String productInfo(String productName, int qty) =>
       _t('Product: $productName (qty: $qty)', 'Produkt: $productName (ilość: $qty)');
   String get barcodeLabel => _t('Barcode: ', 'Kod: ');
+  String get barcodeAlreadyExistsTitle => _t('Barcode Already Exists', 'Kod kreskowy już istnieje');
+  String get barcodeAlreadyExistsBody => _t(
+        'A product with this barcode is already in the storeroom.',
+        'Produkt z tym kodem kreskowym już istnieje w spiżarni.',
+      );
+  String get ok => _t('OK', 'OK');
   String get product => _t('Product', 'Produkt');
 
   // Edit product
