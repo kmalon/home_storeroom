@@ -95,12 +95,26 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
                           subtitle: Text(l.productCount(count)),
                           trailing: IconButton(
                             icon: const Icon(Icons.delete_outline),
-                            onPressed: count > 0
-                                ? null
-                                : () => _deleteName(name),
-                            tooltip: count > 0
-                                ? l.cannotDeleteNameProducts
-                                : l.deleteProductName,
+                            tooltip: l.deleteProductName,
+                            onPressed: () {
+                              if (count > 0) {
+                                showDialog(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    title: Text(l.cannotDeleteTitle),
+                                    content: Text(l.cannotDeleteNameBody(count)),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(dialogContext).pop(),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                _deleteName(name);
+                              }
+                            },
                           ),
                         );
                       },

@@ -95,12 +95,26 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                           subtitle: Text(l.productCount(count)),
                           trailing: IconButton(
                             icon: const Icon(Icons.delete_outline),
-                            onPressed: count > 0
-                                ? null
-                                : () => _deleteCategory(cat.name),
-                            tooltip: count > 0
-                                ? l.cannotDeleteCategoryProducts
-                                : l.deleteCategory,
+                            tooltip: l.deleteCategory,
+                            onPressed: () {
+                              if (count > 0) {
+                                showDialog(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    title: Text(l.cannotDeleteTitle),
+                                    content: Text(l.cannotDeleteCategoryBody(count)),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(dialogContext).pop(),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                _deleteCategory(cat.name);
+                              }
+                            },
                           ),
                         );
                       },

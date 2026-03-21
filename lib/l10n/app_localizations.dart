@@ -59,8 +59,11 @@ class AppLocalizations {
   String get newCategory => _t('New category', 'Nowa kategoria');
   String get add => _t('Add', 'Dodaj');
   String get noCategoriesYet => _t('No categories yet', 'Brak kategorii');
-  String get cannotDeleteCategoryProducts =>
-      _t('Cannot delete: products exist', 'Nie można usunąć: istnieją produkty');
+  String get cannotDeleteTitle => _t('Cannot Delete', 'Nie można usunąć');
+  String cannotDeleteCategoryBody(int n) => _t(
+        '$n product(s) use this category.',
+        '$n produkt(ów) używa tej kategorii.',
+      );
   String get deleteCategory => _t('Delete category', 'Usuń kategorię');
   String productCount(int n) => _t('$n product(s)', '$n produkt(ów)');
 
@@ -68,8 +71,10 @@ class AppLocalizations {
   String get newProductNameField => _t('New product name', 'Nowa nazwa produktu');
   String get noNamesYet => _t('No product names yet', 'Brak nazw produktów');
   String get deleteProductName => _t('Delete name', 'Usuń nazwę');
-  String get cannotDeleteNameProducts =>
-      _t('Cannot delete: products exist', 'Nie można usunąć: istnieją produkty');
+  String cannotDeleteNameBody(int n) => _t(
+        '$n product(s) use this name.',
+        '$n produkt(ów) używa tej nazwy.',
+      );
 
   // Add product
   String get selectCategory => _t('Select a category', 'Wybierz kategorię');
