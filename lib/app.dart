@@ -33,7 +33,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/login',
-        builder: (_, __) => const LoginScreen(),
+        pageBuilder: (_, __) => const NoTransitionPage(child: LoginScreen()),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
@@ -41,37 +41,37 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/products',
-            builder: (_, __) => const ProductListScreen(),
+            pageBuilder: (_, __) => const NoTransitionPage(child: ProductListScreen()),
           ),
           GoRoute(
             path: '/categories',
-            builder: (_, __) => const CategoriesScreen(),
+            pageBuilder: (_, __) => const NoTransitionPage(child: CategoriesScreen()),
           ),
           GoRoute(
             path: '/product-names',
-            builder: (_, __) => const ProductNamesScreen(),
+            pageBuilder: (_, __) => const NoTransitionPage(child: ProductNamesScreen()),
           ),
           GoRoute(
             path: '/fridge',
-            builder: (_, __) => const FridgeScreen(),
+            pageBuilder: (_, __) => const NoTransitionPage(child: FridgeScreen()),
           ),
           GoRoute(
             path: '/config',
-            builder: (_, __) => const ConfigScreen(),
+            pageBuilder: (_, __) => const NoTransitionPage(child: ConfigScreen()),
           ),
         ],
       ),
       GoRoute(
         path: '/add-product',
-        builder: (_, __) => const AddProductScreen(),
+        pageBuilder: (_, __) => const NoTransitionPage(child: AddProductScreen()),
       ),
       GoRoute(
         path: '/remove-product',
-        builder: (_, __) => const RemoveProductScreen(),
+        pageBuilder: (_, __) => const NoTransitionPage(child: RemoveProductScreen()),
       ),
       GoRoute(
         path: '/add-fridge-product',
-        builder: (_, __) => const AddFridgeProductScreen(),
+        pageBuilder: (_, __) => const NoTransitionPage(child: AddFridgeProductScreen()),
       ),
     ],
     initialLocation: '/login',
