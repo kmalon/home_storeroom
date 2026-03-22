@@ -60,3 +60,6 @@ Add string: `selectCategoryForName` → `_t('Select category for name', 'Wybierz
 
 ## Questions
 No questions.
+
+## Branch
+`feature/9-category-name-one-to-many`
