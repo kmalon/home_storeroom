@@ -8,6 +8,7 @@ import '../../models/product.dart';
 import '../../providers/storeroom_provider.dart';
 import '../../widgets/loading_overlay.dart';
 import 'barcode_scan_screen.dart';
+import '../../utils/no_animation_route.dart';
 
 class AddProductScreen extends ConsumerStatefulWidget {
   const AddProductScreen({super.key});
@@ -36,7 +37,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   Future<void> _scanBarcode() async {
     final result = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const BarcodeScanScreen()),
+      noAnimationRoute((_) => const BarcodeScanScreen()),
     );
     if (result != null) {
       setState(() {
