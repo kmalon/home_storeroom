@@ -100,6 +100,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onPressed: () => context.push('/add-product'),
               child: const Icon(Icons.add),
             )
+          : _selectedIndex == 1
+          ? FloatingActionButton(
+              onPressed: () => context.push('/add-fridge-product'),
+              tooltip: AppLocalizations.of(context).addFridgeProduct,
+              child: const Icon(Icons.add),
+            )
           : null,
     );
   }

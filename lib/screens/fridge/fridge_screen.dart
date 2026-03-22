@@ -71,6 +71,128 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> {
     qtyController.dispose();
   }
 
+  Future<void> _showEditSheet(BuildContext context, FridgeProduct product, AppLocalizations l) async {
+    final data = ref.read(storeroomProvider).valueOrNull;
+    final allProductNames = data?.productNames ?? [];
+    final productNames = allProductNames
+        .where((n) => n.category == product.category)
+        .map((n) => n.name)
+        .toList();
+    final qtyController = TextEditingController(text: '${product.quantity}');
+    DateTime? expiry = product.expiryDate;
+    String? selectedName = productNames.contains(product.name) ? product.name : null;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                16, 16, 16, MediaQuery.of(ctx).viewInsets.bottom + 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.editFridgeProduct,
+                      style: Theme.of(ctx).textTheme.titleMedium),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: l.productNameField,
+                      border: const OutlineInputBorder(),
+                    ),
+                    value: selectedName,
+                    items: productNames
+                        .map((n) => DropdownMenuItem(value: n, child: Text(n)))
+                        .toList(),
+                    onChanged: (v) => setSheetState(() => selectedName = v),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: qtyController,
+                    decoration: InputDecoration(
+                      labelText: l.quantityField,
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: expiry ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) setSheetState(() => expiry = picked);
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: l.expirationDateField,
+                        border: const OutlineInputBorder(),
+                      ),
+                      child: Text(
+                        expiry != null
+                            ? _dateFmt.format(expiry!)
+                            : l.tapToSelect,
+                        style: TextStyle(
+                          color: expiry != null ? null : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: Text(l.cancel),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final name = selectedName;
+                          final qty = int.tryParse(qtyController.text) ?? product.quantity;
+                          if (name == null || name.isEmpty || expiry == null) return;
+                          Navigator.of(ctx).pop();
+                          setState(() => _loading = true);
+                          try {
+                            await ref.read(storeroomProvider.notifier).updateFridgeProduct(
+                                  product.copyWith(
+                                    name: name,
+                                    quantity: qty,
+                                    expiryDate: expiry!,
+                                  ),
+                                );
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(l.errorMessage(e))),
+                              );
+                            }
+                          } finally {
+                            if (mounted) setState(() => _loading = false);
+                          }
+                        },
+                        child: Text(l.save),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    qtyController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -111,7 +233,7 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> {
                     Expanded(child: Text(l.colQty, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold))),
                     Expanded(flex: 2, child: Text(l.insertionDate, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold))),
                     Expanded(flex: 2, child: Text(l.colExpiry, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold))),
-                    const SizedBox(width: 40),
+                    const SizedBox(width: 80),
                   ],
                 ),
               ),
@@ -150,6 +272,11 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> {
                                 fontWeight: (isExpired || isExpiringSoon) ? FontWeight.bold : null,
                               ),
                             ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, size: 20),
+                            onPressed: () => _showEditSheet(context, fp, l),
+                            tooltip: l.editFridgeProduct,
                           ),
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline, size: 20),
