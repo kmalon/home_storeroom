@@ -123,7 +123,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Future<void> _showEditSheet(BuildContext context, Product product) async {
     final l = AppLocalizations.of(context);
-    final allProductNames = ref.read(storeroomProvider).valueOrNull?.productNames ?? [];
+    final data = ref.read(storeroomProvider).valueOrNull;
+    final allProductNames = data?.productNames ?? [];
     final productNames = allProductNames
         .where((n) => n.category == product.category)
         .map((n) => n.name)
@@ -205,6 +206,15 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                         child: Text(l.cancel),
                       ),
                       const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.kitchen, size: 18),
+                        label: Text(l.moveToFridge),
+                        onPressed: () async {
+                          Navigator.of(ctx).pop();
+                          await _showMoveToFridgeDialog(context, product, l);
+                        },
+                      ),
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () async {
                           final name = selectedName;
@@ -244,6 +254,76 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
     ref.read(editSheetOpenProvider.notifier).state = false;
     qtyController.dispose();
+  }
+
+  Future<void> _showMoveToFridgeDialog(BuildContext context, Product product, AppLocalizations l) async {
+    final data = ref.read(storeroomProvider).valueOrNull;
+    final defaultDays = data?.categoryExpiryDays[product.category] ?? 7;
+    final defaultExpiry = DateTime.now().add(Duration(days: defaultDays));
+    final suggested = product.expirationDate.isBefore(defaultExpiry)
+        ? product.expirationDate
+        : defaultExpiry;
+
+    DateTime pickedDate = suggested;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(l.confirmMove),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${product.category} — ${product.name}'),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: pickedDate,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) setDialogState(() => pickedDate = picked);
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: l.fridgeExpiryDate,
+                    border: const OutlineInputBorder(),
+                  ),
+                  child: Text(_dateFmt.format(pickedDate)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l.confirm),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+    setState(() => _loading = true);
+    try {
+      await ref.read(storeroomProvider.notifier).moveToFridge(product.id, pickedDate);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.errorMessage(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   Future<void> _pickDate(bool isMin) async {

@@ -14,6 +14,7 @@ class ConfigScreen extends ConsumerStatefulWidget {
 
 class _ConfigScreenState extends ConsumerState<ConfigScreen> {
   late TextEditingController _warningDaysController;
+  final Map<String, TextEditingController> _categoryControllers = {};
   bool _saving = false;
 
   @override
@@ -25,15 +26,52 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
   @override
   void dispose() {
     _warningDaysController.dispose();
+    for (final c in _categoryControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
-  Future<void> _save(AppLocalizations l) async {
+  void _syncCategoryControllers(Map<String, int> categoryExpiryDays) {
+    for (final entry in categoryExpiryDays.entries) {
+      if (!_categoryControllers.containsKey(entry.key)) {
+        _categoryControllers[entry.key] =
+            TextEditingController(text: '${entry.value}');
+      }
+    }
+    final toRemove = _categoryControllers.keys
+        .where((k) => !categoryExpiryDays.containsKey(k))
+        .toList();
+    for (final k in toRemove) {
+      _categoryControllers[k]!.dispose();
+      _categoryControllers.remove(k);
+    }
+  }
+
+  Future<void> _saveWarningDays(AppLocalizations l) async {
     final days = int.tryParse(_warningDaysController.text);
     if (days == null || days < 0) return;
     setState(() => _saving = true);
     try {
       await ref.read(storeroomProvider.notifier).updateExpiryWarningDays(days);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.configSaved)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _saveCategoryExpiry(String category, AppLocalizations l) async {
+    final controller = _categoryControllers[category];
+    if (controller == null) return;
+    final days = int.tryParse(controller.text);
+    if (days == null || days < 0) return;
+    setState(() => _saving = true);
+    try {
+      await ref.read(storeroomProvider.notifier).updateCategoryExpiryDays(category, days);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l.configSaved)),
@@ -56,9 +94,11 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
         if (_warningDaysController.text.isEmpty) {
           _warningDaysController.text = storeroom.expiryWarningDays.toString();
         }
+        _syncCategoryControllers(storeroom.categoryExpiryDays);
+
         return LoadingOverlay(
           isLoading: _saving,
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,10 +116,45 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: _saving ? null : () => _save(l),
+                    onPressed: _saving ? null : () => _saveWarningDays(l),
                     child: Text(l.save),
                   ),
                 ),
+                if (storeroom.categoryExpiryDays.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    l.categoryExpiryDaysLabel,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 12),
+                  ...storeroom.categoryExpiryDays.entries.map((entry) {
+                    final controller = _categoryControllers[entry.key];
+                    if (controller == null) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: controller,
+                              decoration: InputDecoration(
+                                labelText: entry.key,
+                                border: const OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: _saving ? null : () => _saveCategoryExpiry(entry.key, l),
+                            child: Text(l.save),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
               ],
             ),
           ),

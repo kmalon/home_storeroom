@@ -17,7 +17,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
 
-  static const _routes = ['/products', '/categories', '/product-names', '/config'];
+  static const _routes = ['/products', '/fridge', '/categories', '/product-names', '/config'];
 
   Future<void> _pickLanguage(AppLocalizations l) async {
     final current = ref.read(localeProvider);
@@ -89,6 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         destinations: [
           NavigationDestination(icon: const Icon(Icons.list_alt), label: l.productsTab),
+          NavigationDestination(icon: const Icon(Icons.kitchen), label: l.fridgeTab),
           NavigationDestination(icon: const Icon(Icons.category), label: l.categoriesTab),
           NavigationDestination(icon: const Icon(Icons.label_outline), label: l.namesTab),
           NavigationDestination(icon: const Icon(Icons.settings), label: l.configTab),

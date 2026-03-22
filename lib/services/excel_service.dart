@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../models/product.dart';
 import '../models/category.dart';
 import '../models/product_name.dart';
+import '../models/fridge_product.dart';
 import '../models/storeroom_data.dart';
 
 class ExcelService {
@@ -12,6 +13,8 @@ class ExcelService {
   static const _categoriesSheet = 'categories';
   static const _namesSheet = 'product_names';
   static const _configSheet = 'config';
+  static const _fridgeSheet = 'fridge';
+  static const _categoryExpiryPrefix = 'category_expiry_';
   static final _dateFormat = DateFormat('yyyy-MM-dd');
 
   StoreroomData parse(Uint8List bytes) {
@@ -20,6 +23,8 @@ class ExcelService {
     final products = <Product>[];
     final categories = <Category>[];
     final productNames = <ProductName>[];
+    final fridgeProducts = <FridgeProduct>[];
+    final categoryExpiryDays = <String, int>{};
 
     // Parse categories
     final catSheet = excel[_categoriesSheet];
@@ -90,6 +95,47 @@ class ExcelService {
       }
     }
 
+    // Parse fridge products
+    if (excel.tables.containsKey(_fridgeSheet)) {
+      final fridgeSheet = excel[_fridgeSheet];
+      for (var i = 1; i < fridgeSheet.rows.length; i++) {
+        final row = fridgeSheet.rows[i];
+        final id = _cellString(row, 0);
+        final category = _cellString(row, 1);
+        final barcode = _cellString(row, 2);
+        final name = _cellString(row, 3);
+        final quantityStr = _cellString(row, 4);
+        final insertionStr = _cellString(row, 5);
+        final expiryStr = _cellString(row, 6);
+
+        if (id.isEmpty && name.isEmpty) continue;
+
+        final quantity = int.tryParse(quantityStr) ?? 0;
+        DateTime insertion;
+        try {
+          insertion = _dateFormat.parse(insertionStr);
+        } catch (_) {
+          insertion = DateTime.now();
+        }
+        DateTime expiry;
+        try {
+          expiry = _dateFormat.parse(expiryStr);
+        } catch (_) {
+          expiry = DateTime(2099);
+        }
+
+        fridgeProducts.add(FridgeProduct(
+          id: id.isNotEmpty ? id : const Uuid().v4(),
+          category: category,
+          barcode: barcode,
+          name: name,
+          quantity: quantity,
+          insertionDate: insertion,
+          expiryDate: expiry,
+        ));
+      }
+    }
+
     int expiryWarningDays = 7;
     if (excel.tables.containsKey(_configSheet)) {
       final configSheet = excel[_configSheet];
@@ -99,6 +145,12 @@ class ExcelService {
         final value = _cellString(row, 1);
         if (key == 'expiryWarningDays') {
           expiryWarningDays = int.tryParse(value) ?? 7;
+        } else if (key.startsWith(_categoryExpiryPrefix)) {
+          final catName = key.substring(_categoryExpiryPrefix.length);
+          final days = int.tryParse(value);
+          if (catName.isNotEmpty && days != null) {
+            categoryExpiryDays[catName] = days;
+          }
         }
       }
     }
@@ -108,6 +160,8 @@ class ExcelService {
       categories: categories,
       productNames: productNames,
       expiryWarningDays: expiryWarningDays,
+      fridgeProducts: fridgeProducts,
+      categoryExpiryDays: categoryExpiryDays,
     );
   }
 
@@ -152,6 +206,29 @@ class ExcelService {
       ]);
     }
 
+    // Fridge sheet
+    final fridgeSheet = excel[_fridgeSheet];
+    fridgeSheet.appendRow([
+      TextCellValue('id'),
+      TextCellValue('category'),
+      TextCellValue('barcode'),
+      TextCellValue('name'),
+      TextCellValue('quantity'),
+      TextCellValue('insertion_date'),
+      TextCellValue('expiry_date'),
+    ]);
+    for (final fp in data.fridgeProducts) {
+      fridgeSheet.appendRow([
+        TextCellValue(fp.id),
+        TextCellValue(fp.category),
+        TextCellValue(fp.barcode),
+        TextCellValue(fp.name),
+        IntCellValue(fp.quantity),
+        TextCellValue(_dateFormat.format(fp.insertionDate)),
+        TextCellValue(_dateFormat.format(fp.expiryDate)),
+      ]);
+    }
+
     // Config sheet
     final configSheet = excel[_configSheet];
     configSheet.appendRow([TextCellValue('key'), TextCellValue('value')]);
@@ -159,6 +236,12 @@ class ExcelService {
       TextCellValue('expiryWarningDays'),
       IntCellValue(data.expiryWarningDays),
     ]);
+    for (final entry in data.categoryExpiryDays.entries) {
+      configSheet.appendRow([
+        TextCellValue('$_categoryExpiryPrefix${entry.key}'),
+        IntCellValue(entry.value),
+      ]);
+    }
 
     final encoded = excel.encode();
     if (encoded == null) throw Exception('Failed to encode Excel');

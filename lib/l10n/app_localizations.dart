@@ -139,6 +139,15 @@ class AppLocalizations {
   String get editProduct => _t('Edit Product', 'Edytuj produkt');
   String get save => _t('Save', 'Zapisz');
 
+  // Fridge
+  String get fridgeTab => _t('Fridge', 'Lodówka');
+  String get moveToFridge => _t('Move to Fridge', 'Przenieś do lodówki');
+  String get fridgeExpiryDate => _t('Expiry date in fridge', 'Data ważności w lodówce');
+  String get insertionDate => _t('Insertion date', 'Data wstawienia');
+  String get noFridgeProducts => _t('Fridge is empty', 'Lodówka jest pusta');
+  String get categoryExpiryDaysLabel => _t('Default fridge expiry (days)', 'Domyślna ważność w lodówce (dni)');
+  String get confirmMove => _t('Confirm Move', 'Potwierdź przeniesienie');
+
   // Language picker
   String get language => _t('Language', 'Język');
   String get systemDefault => _t('System default', 'Domyślny systemu');
