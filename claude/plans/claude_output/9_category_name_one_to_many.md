@@ -63,3 +63,25 @@ No questions.
 
 ## Branch
 `feature/9-category-name-one-to-many`
+
+---
+
+## Fix: Add "Add New Category" Inline in ProductNamesScreen
+
+### Issue
+During adding a Name, user should be able to add a new Category if it doesn't exist — not only choose from dropdown. The original plan specified this ("optional '+' to add new category inline") but the implementation omitted it.
+
+### Changes
+
+#### `lib/screens/product_names/product_names_screen.dart`
+- Added `_showAddCategoryDialog(AppLocalizations l)` method: dialog with category name input, calls `addCategory`, auto-selects new category on success
+- Wrapped `DropdownButtonFormField` in a `Row` with `Expanded` + `IconButton(Icons.add)` that triggers the dialog
+
+### Files Changed
+- `lib/screens/product_names/product_names_screen.dart`
+
+### Verification
+1. Open Names screen → category row shows dropdown + "+" button
+2. Tap "+" → dialog appears, enter new category name → category created and auto-selected in dropdown
+3. Enter name text → tap Add → name added under new category
+4. Existing dropdown still works for existing categories

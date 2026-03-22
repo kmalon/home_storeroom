@@ -23,6 +23,65 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
     super.dispose();
   }
 
+  Future<void> _showAddCategoryDialog(AppLocalizations l) async {
+    final controller = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        bool dialogLoading = false;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: Text(l.addCategoryTitle),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(hintText: l.newCategory),
+            ),
+            actions: [
+              TextButton(
+                onPressed: dialogLoading ? null : () => Navigator.of(ctx).pop(),
+                child: Text(l.cancel),
+              ),
+              TextButton(
+                onPressed: dialogLoading
+                    ? null
+                    : () async {
+                        final name = controller.text.trim();
+                        if (name.isEmpty) return;
+                        setDialogState(() => dialogLoading = true);
+                        try {
+                          await ref.read(storeroomProvider.notifier).addCategory(name);
+                          if (mounted) {
+                            setState(() => _selectedCategory = name);
+                            Navigator.of(ctx).pop();
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l.categoryAlreadyExists)),
+                            );
+                          }
+                        } finally {
+                          if (ctx.mounted) setDialogState(() => dialogLoading = false);
+                        }
+                      },
+                child: dialogLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l.add),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    controller.dispose();
+  }
+
   Future<void> _addName(AppLocalizations l) async {
     final name = _controller.text.trim();
     final category = _selectedCategory;
@@ -72,16 +131,27 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: l.selectCategoryForName,
-                        border: const OutlineInputBorder(),
-                      ),
-                      value: _selectedCategory,
-                      items: categories
-                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                          .toList(),
-                      onChanged: (v) => setState(() => _selectedCategory = v),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            decoration: InputDecoration(
+                              labelText: l.selectCategoryForName,
+                              border: const OutlineInputBorder(),
+                            ),
+                            value: _selectedCategory,
+                            items: categories
+                                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                .toList(),
+                            onChanged: (v) => setState(() => _selectedCategory = v),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          tooltip: l.addCategoryTitle,
+                          onPressed: () => _showAddCategoryDialog(l),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Row(
