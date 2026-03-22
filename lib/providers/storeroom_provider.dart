@@ -110,6 +110,11 @@ class StoreroomNotifier extends AsyncNotifier<StoreroomData> {
     final updated = current.categories.where((c) => c.name != name).toList();
     await _save(current.copyWith(categories: updated));
   }
+
+  Future<void> updateExpiryWarningDays(int days) async {
+    final current = state.requireValue;
+    await _save(current.copyWith(expiryWarningDays: days));
+  }
 }
 
 final storeroomProvider =
