@@ -28,6 +28,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   bool _showFilters = false;
   final Set<String> _filterCategories = {};
   final Set<String> _filterNames = {};
+  final _searchController = TextEditingController();
   final _minQtyController = TextEditingController();
   final _maxQtyController = TextEditingController();
   DateTime? _minExpiry;
@@ -37,12 +38,14 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _minQtyController.dispose();
     _maxQtyController.dispose();
     super.dispose();
   }
 
   bool get _hasActiveFilters =>
+      _searchController.text.trim().isNotEmpty ||
       _filterCategories.isNotEmpty ||
       _filterNames.isNotEmpty ||
       _minQtyController.text.isNotEmpty ||
@@ -52,6 +55,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   void _clearFilters() {
     setState(() {
+      _searchController.clear();
       _filterCategories.clear();
       _filterNames.clear();
       _minQtyController.clear();
@@ -75,7 +79,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   List<Product> _applyFilters(List<Product> products) {
     final minQty = int.tryParse(_minQtyController.text);
     final maxQty = int.tryParse(_maxQtyController.text);
+    final q = _searchController.text.trim().toLowerCase();
     return products.where((p) {
+      if (q.isNotEmpty &&
+          !p.category.toLowerCase().contains(q) &&
+          !p.name.toLowerCase().contains(q)) return false;
       if (_filterCategories.isNotEmpty && !_filterCategories.contains(p.category)) return false;
       if (_filterNames.isNotEmpty && !_filterNames.contains(p.name)) return false;
       if (minQty != null && p.quantity < minQty) return false;
@@ -473,6 +481,25 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     ),
                   ],
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: l.searchHint,
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () => setState(() => _searchController.clear()),
+                        )
+                      : null,
+                  isDense: true,
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (_) => setState(() {}),
               ),
             ),
             if (_showFilters) _buildFilterPanel(l, categories, names),

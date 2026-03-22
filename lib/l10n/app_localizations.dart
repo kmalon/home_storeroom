@@ -53,6 +53,7 @@ class AppLocalizations {
   String get any => _t('Any', 'Dowolna');
   String get allCategories => _t('All categories', 'Wszystkie kategorie');
   String get allNames => _t('All names', 'Wszystkie nazwy');
+  String get searchHint => _t('Search by category or name…', 'Szukaj po kategorii lub nazwie…');
 
   // Column headers
   String get colCategory => _t('Category', 'Kategoria');
