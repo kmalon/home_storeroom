@@ -98,8 +98,11 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       itemBuilder: (context, index) {
                         final cat = data.categories[index];
                         final count = data.products
-                            .where((p) => p.category == cat.name)
-                            .length;
+                                .where((p) => p.category == cat.name)
+                                .length +
+                            data.fridgeProducts
+                                .where((p) => p.category == cat.name)
+                                .length;
                         return ListTile(
                           title: Text(cat.name),
                           subtitle: Text(l.productCount(count)),
