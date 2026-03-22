@@ -543,12 +543,24 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                             p.expirationDate.month, p.expirationDate.day);
                         final todayDate =
                             DateTime(today.year, today.month, today.day);
+                        final warningDays = ref
+                            .watch(storeroomProvider)
+                            .valueOrNull
+                            ?.expiryWarningDays ?? 7;
+                        final warningDate = todayDate.add(Duration(days: warningDays));
                         final isExpiredOrToday = !expiryDate.isAfter(todayDate);
+                        final isExpiringSoon = !isExpiredOrToday && expiryDate.isBefore(warningDate);
+                        Color? rowColor;
+                        if (isExpiredOrToday) {
+                          rowColor = Colors.red.shade50;
+                        } else if (isExpiringSoon) {
+                          rowColor = Colors.orange.shade50;
+                        }
                         return InkWell(
                           onTap: () => _showEditSheet(context, p),
                           onLongPress: () => context.push('/remove-product'),
                           child: Container(
-                            color: isExpiredOrToday ? Colors.red.shade50 : null,
+                            color: rowColor,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
                             child: Row(
@@ -566,8 +578,12 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                     expiry,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: isExpiredOrToday ? Colors.red : null,
-                                      fontWeight: isExpiredOrToday
+                                      color: isExpiredOrToday
+                                          ? Colors.red
+                                          : isExpiringSoon
+                                              ? Colors.orange.shade800
+                                              : null,
+                                      fontWeight: (isExpiredOrToday || isExpiringSoon)
                                           ? FontWeight.bold
                                           : null,
                                     ),

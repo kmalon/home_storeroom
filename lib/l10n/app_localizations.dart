@@ -31,6 +31,11 @@ class AppLocalizations {
   String get productsTab => _t('Products', 'Produkty');
   String get categoriesTab => _t('Categories', 'Kategorie');
   String get namesTab => _t('Names', 'Nazwy');
+  String get configTab => _t('Config', 'Ustawienia');
+
+  // Config screen
+  String get expiryWarningDaysLabel => _t('Expiry warning (days)', 'Ostrzeżenie o ważności (dni)');
+  String get configSaved => _t('Settings saved', 'Ustawienia zapisane');
 
   // Product list
   String get noProductsYet => _t('No products yet', 'Brak produktów');

@@ -10,6 +10,7 @@ class ExcelService {
   static const _productsSheet = 'products';
   static const _categoriesSheet = 'categories';
   static const _namesSheet = 'product_names';
+  static const _configSheet = 'config';
   static final _dateFormat = DateFormat('yyyy-MM-dd');
 
   StoreroomData parse(Uint8List bytes) {
@@ -69,7 +70,25 @@ class ExcelService {
       ));
     }
 
-    return StoreroomData(products: products, categories: categories, productNames: productNames);
+    int expiryWarningDays = 7;
+    if (excel.tables.containsKey(_configSheet)) {
+      final configSheet = excel[_configSheet];
+      for (var i = 1; i < configSheet.rows.length; i++) {
+        final row = configSheet.rows[i];
+        final key = _cellString(row, 0);
+        final value = _cellString(row, 1);
+        if (key == 'expiryWarningDays') {
+          expiryWarningDays = int.tryParse(value) ?? 7;
+        }
+      }
+    }
+
+    return StoreroomData(
+      products: products,
+      categories: categories,
+      productNames: productNames,
+      expiryWarningDays: expiryWarningDays,
+    );
   }
 
   Uint8List encode(StoreroomData data) {
@@ -112,6 +131,14 @@ class ExcelService {
         TextCellValue(_dateFormat.format(p.expirationDate)),
       ]);
     }
+
+    // Config sheet
+    final configSheet = excel[_configSheet];
+    configSheet.appendRow([TextCellValue('key'), TextCellValue('value')]);
+    configSheet.appendRow([
+      TextCellValue('expiryWarningDays'),
+      IntCellValue(data.expiryWarningDays),
+    ]);
 
     final encoded = excel.encode();
     if (encoded == null) throw Exception('Failed to encode Excel');

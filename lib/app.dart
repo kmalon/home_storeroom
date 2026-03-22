@@ -11,6 +11,7 @@ import 'screens/categories/categories_screen.dart';
 import 'screens/product_names/product_names_screen.dart';
 import 'screens/add_product/add_product_screen.dart';
 import 'screens/remove_product/remove_product_screen.dart';
+import 'screens/config/config_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -47,6 +48,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/product-names',
             builder: (_, __) => const ProductNamesScreen(),
+          ),
+          GoRoute(
+            path: '/config',
+            builder: (_, __) => const ConfigScreen(),
           ),
         ],
       ),
