@@ -33,3 +33,16 @@
 
 ## Branch
 `feature/12-fridge-edit-add`
+
+---
+
+## Fix: Default expiry date when adding to fridge
+
+**Issue:** When adding a product directly to the fridge, expiry date required manual selection. Should default to `now() + categoryExpiryDays[category]` (same as move-to-fridge flow).
+
+**Changes in `lib/screens/fridge/add_fridge_product_screen.dart`:**
+- Added `_defaultExpiryForCategory(category)` helper — returns `now() + categoryExpiryDays ?? 7`
+- Category dropdown `onChanged` → sets `_expiryDate` to default immediately
+- `_showAddCategoryDialog` → sets `_expiryDate` to default after new category created
+- `_pickDate` → uses `_expiryDate ?? default` as `initialDate`
+- `_submit` → uses `_expiryDate ?? default` so expiry is always set even if user skips picker

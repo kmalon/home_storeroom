@@ -75,7 +75,10 @@ class _AddFridgeProductScreenState extends ConsumerState<AddFridgeProductScreen>
                         try {
                           await ref.read(storeroomProvider.notifier).addCategory(name);
                           if (mounted) {
-                            setState(() => _selectedCategory = name);
+                            setState(() {
+                              _selectedCategory = name;
+                              _expiryDate = _defaultExpiryForCategory(name);
+                            });
                             Navigator.of(ctx).pop();
                           }
                         } catch (e) {
@@ -168,12 +171,16 @@ class _AddFridgeProductScreenState extends ConsumerState<AddFridgeProductScreen>
     controller.dispose();
   }
 
-  Future<void> _pickDate(AppLocalizations l) async {
+  DateTime _defaultExpiryForCategory(String? category) {
     final data = ref.read(storeroomProvider).valueOrNull;
-    final defaultDays = data?.categoryExpiryDays[_selectedCategory] ?? 7;
+    final defaultDays = data?.categoryExpiryDays[category] ?? 7;
+    return DateTime.now().add(Duration(days: defaultDays));
+  }
+
+  Future<void> _pickDate(AppLocalizations l) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().add(Duration(days: defaultDays)),
+      initialDate: _expiryDate ?? _defaultExpiryForCategory(_selectedCategory),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -184,9 +191,9 @@ class _AddFridgeProductScreenState extends ConsumerState<AddFridgeProductScreen>
     final category = _selectedCategory;
     final name = _selectedName;
     final qty = int.tryParse(_quantityController.text) ?? 1;
-    final expiry = _expiryDate;
+    final expiry = _expiryDate ?? _defaultExpiryForCategory(category);
 
-    if (category == null || name == null || name.isEmpty || expiry == null) {
+    if (category == null || name == null || name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l.fillRequiredFields)),
       );
@@ -276,6 +283,7 @@ class _AddFridgeProductScreenState extends ConsumerState<AddFridgeProductScreen>
                             onChanged: (v) => setState(() {
                               _selectedCategory = v;
                               _selectedName = null;
+                              _expiryDate = _defaultExpiryForCategory(v);
                             }),
                           ),
                         ),
