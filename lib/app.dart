@@ -13,6 +13,7 @@ import 'screens/add_product/add_product_screen.dart';
 import 'screens/remove_product/remove_product_screen.dart';
 import 'screens/config/config_screen.dart';
 import 'screens/fridge/fridge_screen.dart';
+import 'screens/fridge/add_fridge_product_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -67,6 +68,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/remove-product',
         builder: (_, __) => const RemoveProductScreen(),
+      ),
+      GoRoute(
+        path: '/add-fridge-product',
+        builder: (_, __) => const AddFridgeProductScreen(),
       ),
     ],
     initialLocation: '/login',
