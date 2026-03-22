@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/storeroom_provider.dart';
+import '../../widgets/loading_overlay.dart';
 
 class ProductNamesScreen extends ConsumerStatefulWidget {
   const ProductNamesScreen({super.key});
@@ -12,6 +13,7 @@ class ProductNamesScreen extends ConsumerStatefulWidget {
 
 class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
   final _controller = TextEditingController();
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -22,6 +24,7 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
   Future<void> _addName(AppLocalizations l) async {
     final name = _controller.text.trim();
     if (name.isEmpty) return;
+    setState(() => _loading = true);
     try {
       await ref.read(storeroomProvider.notifier).addProductName(name);
       _controller.clear();
@@ -30,10 +33,13 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.toString())));
       }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   Future<void> _deleteName(String name) async {
+    setState(() => _loading = true);
     try {
       await ref.read(storeroomProvider.notifier).deleteProductName(name);
     } catch (e) {
@@ -41,6 +47,8 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.toString())));
       }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -52,7 +60,9 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text(l.errorMessage(e))),
       data: (data) {
-        return Column(
+        return LoadingOverlay(
+          isLoading: _loading,
+          child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
@@ -121,7 +131,7 @@ class _ProductNamesScreenState extends ConsumerState<ProductNamesScreen> {
                     ),
             ),
           ],
-        );
+        ));
       },
     );
   }

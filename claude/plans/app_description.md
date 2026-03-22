@@ -1,0 +1,1 @@
+Flutter app: home storeroom inventory tracker. Syncs to Google Drive Excel. Auth via Google. Products have: category, name, barcode, qty, expiry. 3 tabs: Products list (sortable/filterable), Categories, Names. Add/remove product flows with barcode scan. Polish/English l10n.

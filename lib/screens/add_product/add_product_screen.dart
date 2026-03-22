@@ -50,41 +50,57 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final controller = TextEditingController();
     await showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l.addCategoryTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(hintText: l.newCategory),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l.cancel),
+      builder: (ctx) {
+        bool dialogLoading = false;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: Text(l.addCategoryTitle),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(hintText: l.newCategory),
+            ),
+            actions: [
+              TextButton(
+                onPressed: dialogLoading ? null : () => Navigator.of(ctx).pop(),
+                child: Text(l.cancel),
+              ),
+              TextButton(
+                onPressed: dialogLoading
+                    ? null
+                    : () async {
+                        final name = controller.text.trim();
+                        if (name.isEmpty) return;
+                        setDialogState(() => dialogLoading = true);
+                        try {
+                          await ref.read(storeroomProvider.notifier).addCategory(name);
+                          if (mounted) {
+                            setState(() => _selectedCategory = name);
+                            Navigator.of(ctx).pop();
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l.categoryAlreadyExists)),
+                            );
+                          }
+                        } finally {
+                          if (ctx.mounted) setDialogState(() => dialogLoading = false);
+                        }
+                      },
+                child: dialogLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l.add),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              final name = controller.text.trim();
-              if (name.isEmpty) return;
-              try {
-                await ref.read(storeroomProvider.notifier).addCategory(name);
-                if (mounted) {
-                  setState(() => _selectedCategory = name);
-                  Navigator.of(ctx).pop();
-                }
-              } catch (e) {
-                if (mounted) {
-                  Navigator.of(ctx).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l.categoryAlreadyExists)),
-                  );
-                }
-              }
-            },
-            child: Text(l.add),
-          ),
-        ],
-      ),
+        );
+      },
     );
     controller.dispose();
   }
@@ -93,41 +109,57 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final controller = TextEditingController();
     await showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l.addNameTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(hintText: l.newProductNameField),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l.cancel),
+      builder: (ctx) {
+        bool dialogLoading = false;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: Text(l.addNameTitle),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(hintText: l.newProductNameField),
+            ),
+            actions: [
+              TextButton(
+                onPressed: dialogLoading ? null : () => Navigator.of(ctx).pop(),
+                child: Text(l.cancel),
+              ),
+              TextButton(
+                onPressed: dialogLoading
+                    ? null
+                    : () async {
+                        final name = controller.text.trim();
+                        if (name.isEmpty) return;
+                        setDialogState(() => dialogLoading = true);
+                        try {
+                          await ref.read(storeroomProvider.notifier).addProductName(name);
+                          if (mounted) {
+                            setState(() => _selectedName = name);
+                            Navigator.of(ctx).pop();
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l.nameAlreadyExists)),
+                            );
+                          }
+                        } finally {
+                          if (ctx.mounted) setDialogState(() => dialogLoading = false);
+                        }
+                      },
+                child: dialogLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l.add),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              final name = controller.text.trim();
-              if (name.isEmpty) return;
-              try {
-                await ref.read(storeroomProvider.notifier).addProductName(name);
-                if (mounted) {
-                  setState(() => _selectedName = name);
-                  Navigator.of(ctx).pop();
-                }
-              } catch (e) {
-                if (mounted) {
-                  Navigator.of(ctx).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l.nameAlreadyExists)),
-                  );
-                }
-              }
-            },
-            child: Text(l.add),
-          ),
-        ],
-      ),
+        );
+      },
     );
     controller.dispose();
   }
