@@ -115,7 +115,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Future<void> _showEditSheet(BuildContext context, Product product) async {
     final l = AppLocalizations.of(context);
-    final productNames = ref.read(storeroomProvider).valueOrNull?.productNames ?? [];
+    final allProductNames = ref.read(storeroomProvider).valueOrNull?.productNames ?? [];
+    final productNames = allProductNames
+        .where((n) => n.category == product.category)
+        .map((n) => n.name)
+        .toList();
     final qtyController = TextEditingController(text: '${product.quantity}');
     DateTime? expiry = product.expirationDate;
     String? selectedName = productNames.contains(product.name) ? product.name : null;
@@ -405,7 +409,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
       error: (e, _) => Center(child: Text(l.errorMessage(e))),
       data: (data) {
         final categories = data.categories.map((c) => c.name).toList();
-        final names = data.productNames;
+        final names = data.productNames.map((n) => n.name).toSet().toList();
         final products = _sorted(_applyFilters(data.products));
 
         if (data.products.isEmpty) {

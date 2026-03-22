@@ -106,6 +106,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   }
 
   Future<void> _showAddNameDialog(AppLocalizations l) async {
+    final category = _selectedCategory;
+    if (category == null) return;
     final controller = TextEditingController();
     await showDialog(
       context: context,
@@ -132,7 +134,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                         if (name.isEmpty) return;
                         setDialogState(() => dialogLoading = true);
                         try {
-                          await ref.read(storeroomProvider.notifier).addProductName(name);
+                          await ref
+                              .read(storeroomProvider.notifier)
+                              .addProductName(name, category);
                           if (mounted) {
                             setState(() => _selectedName = name);
                             Navigator.of(ctx).pop();
@@ -233,7 +237,11 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final l = AppLocalizations.of(context);
     final state = ref.watch(storeroomProvider);
     final categories = state.valueOrNull?.categories.map((c) => c.name).toList() ?? [];
-    final productNames = state.valueOrNull?.productNames ?? [];
+    final namesForCategory = state.valueOrNull?.productNames
+            .where((n) => n.category == _selectedCategory)
+            .map((n) => n.name)
+            .toList() ??
+        [];
 
     return LoadingOverlay(
       isLoading: _loading,
@@ -278,7 +286,10 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                             items: categories
                                 .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                                 .toList(),
-                            onChanged: (v) => setState(() => _selectedCategory = v),
+                            onChanged: (v) => setState(() {
+                              _selectedCategory = v;
+                              _selectedName = null;
+                            }),
                           ),
                         ),
                         IconButton(
@@ -335,7 +346,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                             border: const OutlineInputBorder(),
                           ),
                           value: _selectedName,
-                          items: productNames
+                          items: namesForCategory
                               .map((n) => DropdownMenuItem(value: n, child: Text(n)))
                               .toList(),
                           onChanged: (v) => setState(() => _selectedName = v),
