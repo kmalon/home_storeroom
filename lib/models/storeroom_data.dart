@@ -1,10 +1,11 @@
 import 'product.dart';
 import 'category.dart';
+import 'product_name.dart';
 
 class StoreroomData {
   final List<Product> products;
   final List<Category> categories;
-  final List<String> productNames;
+  final List<ProductName> productNames;
   final int expiryWarningDays;
 
   const StoreroomData({
@@ -17,7 +18,7 @@ class StoreroomData {
   StoreroomData copyWith({
     List<Product>? products,
     List<Category>? categories,
-    List<String>? productNames,
+    List<ProductName>? productNames,
     int? expiryWarningDays,
   }) {
     return StoreroomData(

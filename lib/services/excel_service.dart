@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../models/product.dart';
 import '../models/category.dart';
+import '../models/product_name.dart';
 import '../models/storeroom_data.dart';
 
 class ExcelService {
@@ -18,7 +19,7 @@ class ExcelService {
 
     final products = <Product>[];
     final categories = <Category>[];
-    final productNames = <String>[];
+    final productNames = <ProductName>[];
 
     // Parse categories
     final catSheet = excel[_categoriesSheet];
@@ -30,16 +31,7 @@ class ExcelService {
       }
     }
 
-    // Parse product names
-    if (excel.tables.containsKey(_namesSheet)) {
-      final namesSheet = excel[_namesSheet];
-      for (var i = 1; i < namesSheet.rows.length; i++) {
-        final name = _cellString(namesSheet.rows[i], 0);
-        if (name.isNotEmpty) productNames.add(name);
-      }
-    }
-
-    // Parse products
+    // Parse products first (needed for migration)
     final prodSheet = excel[_productsSheet];
     for (var i = 1; i < prodSheet.rows.length; i++) {
       final row = prodSheet.rows[i];
@@ -68,6 +60,34 @@ class ExcelService {
         quantity: quantity,
         expirationDate: expiry,
       ));
+    }
+
+    // Parse product names
+    if (excel.tables.containsKey(_namesSheet)) {
+      final namesSheet = excel[_namesSheet];
+      for (var i = 1; i < namesSheet.rows.length; i++) {
+        final row = namesSheet.rows[i];
+        final name = _cellString(row, 0);
+        if (name.isEmpty) continue;
+        final category = _cellString(row, 1);
+        if (category.isNotEmpty) {
+          // New format: category column present
+          productNames.add(ProductName(name: name, category: category));
+        } else {
+          // Old format: auto-migrate by finding categories used with this name in products
+          final usedCategories = products
+              .where((p) => p.name == name)
+              .map((p) => p.category)
+              .toSet();
+          for (final cat in usedCategories) {
+            if (cat.isNotEmpty &&
+                !productNames.any((n) => n.name == name && n.category == cat)) {
+              productNames.add(ProductName(name: name, category: cat));
+            }
+          }
+          // If name not used in any product, discard it
+        }
+      }
     }
 
     int expiryWarningDays = 7;
@@ -106,9 +126,9 @@ class ExcelService {
 
     // Product names sheet
     final namesSheet = excel[_namesSheet];
-    namesSheet.appendRow([TextCellValue('name')]);
-    for (final name in data.productNames) {
-      namesSheet.appendRow([TextCellValue(name)]);
+    namesSheet.appendRow([TextCellValue('name'), TextCellValue('category')]);
+    for (final pn in data.productNames) {
+      namesSheet.appendRow([TextCellValue(pn.name), TextCellValue(pn.category)]);
     }
 
     // Products sheet

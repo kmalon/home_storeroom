@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
 import '../models/category.dart';
+import '../models/product_name.dart';
 import '../models/storeroom_data.dart';
 import '../services/drive_service.dart';
 import '../services/excel_service.dart';
@@ -85,20 +86,24 @@ class StoreroomNotifier extends AsyncNotifier<StoreroomData> {
     await _save(current.copyWith(categories: updated));
   }
 
-  Future<void> addProductName(String name) async {
+  Future<void> addProductName(String name, String category) async {
     final current = state.requireValue;
-    if (current.productNames.contains(name)) {
+    if (current.productNames.any((n) => n.name == name && n.category == category)) {
       throw Exception('Product name already exists');
     }
-    await _save(current.copyWith(productNames: [...current.productNames, name]));
+    await _save(current.copyWith(
+      productNames: [...current.productNames, ProductName(name: name, category: category)],
+    ));
   }
 
-  Future<void> deleteProductName(String name) async {
+  Future<void> deleteProductName(ProductName pn) async {
     final current = state.requireValue;
-    if (current.products.any((p) => p.name == name)) {
+    if (current.products.any((p) => p.name == pn.name && p.category == pn.category)) {
       throw Exception('Cannot delete name: products exist');
     }
-    final updated = current.productNames.where((n) => n != name).toList();
+    final updated = current.productNames
+        .where((n) => !(n.name == pn.name && n.category == pn.category))
+        .toList();
     await _save(current.copyWith(productNames: updated));
   }
 
@@ -107,8 +112,9 @@ class StoreroomNotifier extends AsyncNotifier<StoreroomData> {
     if (current.products.any((p) => p.category == name)) {
       throw Exception('Cannot delete category: products exist');
     }
-    final updated = current.categories.where((c) => c.name != name).toList();
-    await _save(current.copyWith(categories: updated));
+    final updatedCategories = current.categories.where((c) => c.name != name).toList();
+    final updatedNames = current.productNames.where((n) => n.category != name).toList();
+    await _save(current.copyWith(categories: updatedCategories, productNames: updatedNames));
   }
 
   Future<void> updateExpiryWarningDays(int days) async {
