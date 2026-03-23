@@ -185,7 +185,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final qty = int.tryParse(_quantityController.text) ?? 1;
     final expiry = _expirationDate;
 
-    if (category == null || name == null || name.isEmpty || expiry == null) {
+    if (category == null || name == null || name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l.fillRequiredFields)),
       );

@@ -8,8 +8,11 @@ class ProductTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final expiry = DateFormat('yyyy-MM-dd').format(product.expirationDate);
-    final isExpired = product.expirationDate.isBefore(DateTime.now());
+    final expiry = product.expirationDate != null
+        ? DateFormat('yyyy-MM-dd').format(product.expirationDate!)
+        : '—';
+    final isExpired = product.expirationDate != null &&
+        product.expirationDate!.isBefore(DateTime.now());
     return ListTile(
       title: Text(product.name),
       subtitle: Text('${product.category} • $expiry'),

@@ -54,7 +54,7 @@ class ExcelService {
       try {
         expiry = _dateFormat.parse(expiryStr);
       } catch (_) {
-        expiry = DateTime(2099);
+        expiry = null;
       }
 
       products.add(Product(
@@ -202,7 +202,7 @@ class ExcelService {
         TextCellValue(p.barcode),
         TextCellValue(p.name),
         IntCellValue(p.quantity),
-        TextCellValue(_dateFormat.format(p.expirationDate)),
+        TextCellValue(p.expirationDate != null ? _dateFormat.format(p.expirationDate!) : ''),
       ]);
     }
 

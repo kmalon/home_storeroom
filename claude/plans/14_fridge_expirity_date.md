@@ -1,0 +1,1 @@
+As Flutter developer change expirity date behavior during moving from the storeroom to the fridge. If expirity date is not set, set is as smaller from storeroom expirity date or current date plus expirity time from config

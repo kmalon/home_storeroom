@@ -89,11 +89,13 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
       if (minQty != null && p.quantity < minQty) return false;
       if (maxQty != null && p.quantity > maxQty) return false;
       if (_minExpiry != null) {
-        final d = DateTime(p.expirationDate.year, p.expirationDate.month, p.expirationDate.day);
+        if (p.expirationDate == null) return false;
+        final d = DateTime(p.expirationDate!.year, p.expirationDate!.month, p.expirationDate!.day);
         if (d.isBefore(_minExpiry!)) return false;
       }
       if (_maxExpiry != null) {
-        final d = DateTime(p.expirationDate.year, p.expirationDate.month, p.expirationDate.day);
+        if (p.expirationDate == null) return false;
+        final d = DateTime(p.expirationDate!.year, p.expirationDate!.month, p.expirationDate!.day);
         if (d.isAfter(_maxExpiry!)) return false;
       }
       return true;
@@ -114,7 +116,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         case _SortField.quantity:
           cmp = a.quantity.compareTo(b.quantity);
         case _SortField.expiration:
-          cmp = a.expirationDate.compareTo(b.expirationDate);
+          final aExp = a.expirationDate ?? DateTime(9999);
+          final bExp = b.expirationDate ?? DateTime(9999);
+          cmp = aExp.compareTo(bExp);
       }
       return _sortAsc ? cmp : -cmp;
     });
@@ -219,7 +223,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                         onPressed: () async {
                           final name = selectedName;
                           final qty = int.tryParse(qtyController.text) ?? product.quantity;
-                          if (name == null || name.isEmpty || expiry == null) return;
+                          if (name == null || name.isEmpty) return;
                           Navigator.of(ctx).pop();
                           setState(() => _loading = true);
                           try {
@@ -227,7 +231,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                   product.copyWith(
                                     name: name,
                                     quantity: qty,
-                                    expirationDate: expiry!,
+                                    expirationDate: expiry,
                                   ),
                                 );
                           } catch (e) {
@@ -260,8 +264,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     final data = ref.read(storeroomProvider).valueOrNull;
     final defaultDays = data?.categoryExpiryDays[product.category] ?? 7;
     final defaultExpiry = DateTime.now().add(Duration(days: defaultDays));
-    final suggested = product.expirationDate.isBefore(defaultExpiry)
-        ? product.expirationDate
+    final storeroomExpiry = product.expirationDate;
+    final suggested = storeroomExpiry != null && storeroomExpiry.isBefore(defaultExpiry)
+        ? storeroomExpiry
         : defaultExpiry;
 
     DateTime pickedDate = suggested;
@@ -648,10 +653,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                       separatorBuilder: (_, __) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final p = products[index];
-                        final expiry = _dateFmt.format(p.expirationDate);
+                        final expiry = p.expirationDate != null ? _dateFmt.format(p.expirationDate!) : '—';
                         final today = DateTime.now();
-                        final expiryDate = DateTime(p.expirationDate.year,
-                            p.expirationDate.month, p.expirationDate.day);
                         final todayDate =
                             DateTime(today.year, today.month, today.day);
                         final warningDays = ref
@@ -659,8 +662,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                             .valueOrNull
                             ?.expiryWarningDays ?? 7;
                         final warningDate = todayDate.add(Duration(days: warningDays));
-                        final isExpiredOrToday = !expiryDate.isAfter(todayDate);
-                        final isExpiringSoon = !isExpiredOrToday && expiryDate.isBefore(warningDate);
+                        final expiryDate = p.expirationDate != null
+                            ? DateTime(p.expirationDate!.year, p.expirationDate!.month, p.expirationDate!.day)
+                            : null;
+                        final isExpiredOrToday = expiryDate != null && !expiryDate.isAfter(todayDate);
+                        final isExpiringSoon = expiryDate != null && !isExpiredOrToday && expiryDate.isBefore(warningDate);
                         Color? rowColor;
                         if (isExpiredOrToday) {
                           rowColor = Colors.red.shade50;
